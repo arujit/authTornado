@@ -4,6 +4,7 @@ import tornado.web
 import tornado.options
 import os.path
 from tornado.options import define, options
+import uuid
 
 define("port", default=8888, help="run on the given port", type=int)
 
@@ -27,10 +28,6 @@ class LoginHandler(BaseHandler):
     @tornado.gen.coroutine
     def post(self):
         incorrect = self.get_secure_cookie("incorrect")
-        if incorrect and int(incorrect) > 20:
-            self.write('<center>blocked</center>')
-            return
-        
         getusername = tornado.escape.xhtml_escape(self.get_argument("username"))
         getpassword = tornado.escape.xhtml_escape(self.get_argument("password"))
         if "demo" == getusername and "demo" == getpassword:
@@ -43,7 +40,6 @@ class LoginHandler(BaseHandler):
             self.set_secure_cookie("incorrect", increased)
             self.write("""<center>
                             Something Wrong With Your Data (%s)<br />
-                            <a href="/">Go Home</a>
                           </center>""" % increased)
 
 
@@ -59,7 +55,7 @@ class Application(tornado.web.Application):
         cookie secret is a basic random string 
         """
         settings = {
-            "cookie_secret": "bZJc2sWbQLKos6GkHn/VB9oXwQt8S0R0kRvJ5/xJ89E=",
+            "cookie_secret": str(uuid.uuid4()),
             "login_url": "/login",
             'template_path': os.path.join(base_dir, "templates"),
             'static_path': os.path.join(base_dir, "static"),
